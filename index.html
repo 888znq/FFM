@@ -1211,24 +1211,10 @@ function addOpen() {
   addRender();
     addAuto();
   }
-  async function addAuto() {
-    var h = null, out = [];
-    if (!window.showDirectoryPicker) { addInp.accept = ''; addInp.click(); return; }
-    try {
-      try {
-        h = await idbGet('fftsync.src');
-        if (h && (await h.requestPermission({ mode: 'read' })) !== 'granted') h = null;
-      } catch (e) { h = null; }
-      if (!h) {
-        h = await window.showDirectoryPicker({ mode: 'read', id: 'fftsyncsrc', startIn: 'pictures' });
-        await idbSet('fftsync.src', h);
-      }
-      if (!addOv) return;
-      addOv.querySelector('.as').textContent = 'Scanning ' + h.name + '…';
-      await addScanDir(h, 0, out);
-    } catch (e) { if (e.name !== 'AbortError') log('warn', 'scan failed: ' + e.message); return; }
-    addStageFiles(out, false);
-  }
+  function addAuto() {
+      addInp.accept = '';
+      addInp.click();
+    }
   addInp.onchange = () => {
     var picked = Array.prototype.slice.call(addInp.files);
   addInp.value = '';
