@@ -131,6 +131,9 @@ body{background:radial-gradient(1100px 600px at 15% -10%,#0d4257 0%,transparent 
 .bar button.cb.on{background:linear-gradient(135deg,rgba(125,180,255,.3),rgba(79,209,161,.2));border-color:var(--up);box-shadow:0 0 18px rgba(125,180,255,.3)}
 .bar button#bSetup{background:linear-gradient(135deg,#2f7fb3,#2aa59b);border-color:transparent;color:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(47,127,179,.4)}
 .bar button#bRefresh{border-radius:12px}
+.bar button#bSetup{position:relative;background:linear-gradient(135deg,#b3363f,#e5484d);border-color:#ff7b7b;color:#fff;animation:redblink 1s ease-in-out infinite}
+.bar button#bSetup.conn{background:linear-gradient(135deg,#1f9d6b,#4fd1a1);border-color:#4fd1a1;box-shadow:0 0 18px rgba(79,209,161,.5);animation:none}
+@keyframes redblink{0%,100%{opacity:1;box-shadow:0 0 18px rgba(255,123,123,.75)}50%{opacity:.55;box-shadow:0 0 4px rgba(255,123,123,.2)}}
 .bar button#bSetup:hover,.bar button#bRefresh:hover{transform:translateY(-2px)}
 .bar{flex-wrap:wrap}
 #catBar{flex:1 0 100%;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
@@ -454,7 +457,9 @@ async function cycle(why) {
     if (e.name === 'NotFoundError') {
       if (timer) { clearInterval(timer); timer = null; }
       root = null;
-      setStatus('paused', 'Folder missing: click ' + NAME + ' icon');
+      $('bSetup').classList.remove('conn');
+            $('bSetup').querySelector('span').textContent = 'Add Pictures Folder';
+            setStatus('paused', 'Folder missing: click ' + NAME + ' icon');
       log('err', 'connected folder no longer exists. Auto-sync stopped, cloud untouched. Click the ' + NAME + ' icon to reconnect.');
       return;
     }
@@ -677,6 +682,8 @@ function startLoop() {
 // ───────── Folder connect ─────────
 async function useFolder(h, fresh) {
   root = h; announced = false; treeSig = '';
+    $('bSetup').classList.add('conn');
+      $('bSetup').querySelector('span').textContent = 'Folder Connected';
   if (fresh) { base = {}; hcache.clear(); saveBase(); }
   log('ok', 'folder connected: "' + h.name + '"' + (fresh ? ' (new connection, sync history reset)' : ' (restored)'));
   startLoop();
