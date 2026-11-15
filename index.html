@@ -760,6 +760,14 @@ async function openFile(p) {
         vc.onclick = ev => { if (ev.target === vc) viewClose(); };
         hd.append(nmE, dl, xb);
         vc.appendChild(el);
+            if (cat === 'videos' || cat === 'music') {
+              el.onerror = () => {
+                var msg = document.createElement('div');
+                msg.className = 'pe';
+                msg.textContent = 'This format can’t be played in the browser. Use Download to open it with another app.';
+                if (el.parentNode) el.replaceWith(msg);
+              };
+            }
         viewOv.append(hd, vc);
         document.body.appendChild(viewOv);
         document.addEventListener('keydown', viewKey);
