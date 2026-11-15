@@ -1016,14 +1016,20 @@ function addRender() {
       var b = document.createElement('button');
       b.className = 'ct' + (c.id === addCat ? ' on' : '');
       b.innerHTML = '<svg viewBox="0 0 24 24">' + c.icon + '</svg><b>' + c.name + '</b><small>' + all.filter(x => catOf(x.f.name) === c.id).length + '</small>';
-      b.onclick = () => { addCat = c.id; addRender(); };
-      tabs.appendChild(b);
+      b.onclick = () => {
+            var was = addCat === c.id;
+            addCat = c.id;
+            addRender();
+            if (was || !all.some(x => catOf(x.f.name) === c.id)) { addInp.accept = addAccept(c.id); addInp.click(); }
+          };
+          tabs.appendChild(b);
     });
-  addOv.querySelector('.bc').textContent = 'Browse ' + (CATS.find(k => k.id === addCat) || {}).name;
   if (!list.length) {
     var e = document.createElement('div');
     e.className = 'pe';
-    e.textContent = 'Nothing here yet. Tap Browse to choose files from your device.';
+    e.textContent = 'Tap here to choose files from your device.';
+        e.style.cursor = 'pointer';
+        e.onclick = () => { addInp.accept = addAccept(addCat); addInp.click(); };
     pv.appendChild(e);
   }
   list.forEach(x => {
@@ -1070,31 +1076,10 @@ function addOpen() {
   addOv.innerHTML = '<div class="ah"><span>Add files to ' + NAME + '</span><button class="ab xc" aria-label="Close">✕</button></div>'
       + '<div class="av"></div>'
       + '<div class="abar"><div class="at"></div>'
-      + '<div class="aa"><button class="ab bc"></button><button class="ab ba">Browse all files</button>'
-      + (window.showDirectoryPicker ? '<button class="ab bf">Scan a folder</button>' : '')
-      + '<button class="ab sa">Select all</button><button class="ab cl">Clear</button></div>'
       + '<div class="af"><span class="as"></span><button class="ab go">Add</button></div></div>';
   document.body.appendChild(addOv);
   addOv.querySelector('.xc').onclick = addClose;
-  addOv.querySelector('.bc').onclick = () => { addInp.accept = addAccept(addCat); addInp.click(); };
-  addOv.querySelector('.ba').onclick = () => { addInp.accept = ''; addInp.click(); };
-  var bf = addOv.querySelector('.bf');
-  if (bf) bf.onclick = async () => {
-    var out = [];
-    try {
-      var dir = await window.showDirectoryPicker({ mode: 'read' });
-      if (addOv) addOv.querySelector('.as').textContent = 'Scanning ' + dir.name + '…';
-      await addScanDir(dir, 0, out);
-    } catch (e) { if (e.name !== 'AbortError') log('warn', 'folder scan failed: ' + e.message); }
-    addStageFiles(out, false);
-  };
-  addOv.querySelector('.sa').onclick = () => {
-    var list = Array.from(addStage.values()).filter(x => catOf(x.f.name) === addCat);
-    var every = list.length > 0 && list.every(x => x.sel);
-    list.forEach(x => { x.sel = !every; });
-    addRender();
-  };
-  addOv.querySelector('.cl').onclick = () => { addStage.forEach(x => { x.sel = false; }); addRender(); };
+  addOv.querySelector('.xc').onclick = addClose;
   addOv.querySelector('.go').onclick = async () => {
     var picks = Array.from(addStage.values()).filter(x => x.sel).map(x => x.f);
     if (!picks.length) return;
@@ -1102,9 +1087,11 @@ function addOpen() {
     try { await addFilesToFolder(picks); } catch (e) { log('err', 'add files failed: ' + e.message); }
   };
   addRender();
-}
-addInp.onchange = () => {
-  var picked = Array.prototype.slice.call(addInp.files);
+    addInp.accept = '';
+    addInp.click();
+  }
+  addInp.onchange = () => {
+    var picked = Array.prototype.slice.call(addInp.files);
   addInp.value = '';
   addStageFiles(picked, true);
 };
