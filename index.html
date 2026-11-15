@@ -99,6 +99,39 @@ body{background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system
 #tree .pc button.del{position:absolute;top:6px;right:6px;z-index:1;background:rgba(0,0,0,.55);border-color:var(--line)}
 .pe{color:var(--mut);padding:20px}
 #tree .th{display:none}
+body{background:radial-gradient(1100px 600px at 15% -10%,#0d4257 0%,transparent 60%),radial-gradient(900px 500px at 105% 115%,#0b3340 0%,transparent 55%),#04202b}
+#tree{background:rgba(255,255,255,.025);border-color:rgba(125,180,255,.2);border-radius:16px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.3);scrollbar-width:thin;scrollbar-color:#2f7fb3 transparent}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.pv{gap:16px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.pc{border-radius:14px;border-color:rgba(125,180,255,.16);background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));box-shadow:0 4px 14px rgba(0,0,0,.28);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;animation:pop .35s ease both}
+.pc:hover{transform:translateY(-4px);border-color:var(--up);box-shadow:0 14px 30px rgba(0,0,0,.45),0 0 0 1px rgba(125,180,255,.25)}
+.pc.loc{border-color:var(--up)}
+.pc.cld{border-color:var(--warn)}
+.pc.diff{border-color:var(--err)}
+.pc .pt{height:150px;background:linear-gradient(135deg,rgba(0,0,0,.35),rgba(125,180,255,.08))}
+.pc .pt img,.pc .pt video{transition:transform .35s ease}
+.pc:hover .pt img,.pc:hover .pt video{transform:scale(1.07)}
+.pc .pt svg{width:46px;height:46px;stroke:var(--up);opacity:.75}
+.pc .pi{padding:10px 12px 12px}
+.pc .pn{font-size:13px;font-weight:600;margin-bottom:3px}
+.pc .pm{display:flex;flex-direction:column;gap:1px;font-size:11px}
+.pc .pm span:last-child{opacity:.75}
+.pc .bd{position:absolute;left:8px;top:124px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.6px;color:#04202b;background:linear-gradient(135deg,#7db4ff,#4fd1a1);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#tree .pc i{top:10px;left:10px;width:10px;height:10px;border:2px solid rgba(0,0,0,.5)}
+#tree .pc.ok i{box-shadow:0 0 10px var(--ok)}
+#tree .pc.loc i{box-shadow:0 0 10px var(--up)}
+#tree .pc.cld i{box-shadow:0 0 10px var(--warn)}
+#tree .pc.diff i{box-shadow:0 0 10px var(--err)}
+#tree .pc button.del{width:26px;height:26px;border-radius:50%;backdrop-filter:blur(6px);opacity:0;transition:opacity .15s ease}
+.pc:hover button.del{opacity:1}
+.pe{grid-column:1/-1;text-align:center;padding:60px 20px;border:1px dashed var(--line);border-radius:14px}
+.bar{gap:10px;border-radius:18px;border-color:rgba(125,180,255,.2);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));backdrop-filter:blur(10px);box-shadow:0 -6px 26px rgba(0,0,0,.3)}
+.bar button.cb{border-radius:12px;transition:all .15s ease}
+.bar button.cb:hover{transform:translateY(-2px)}
+.bar button.cb.on{background:linear-gradient(135deg,rgba(125,180,255,.3),rgba(79,209,161,.2));border-color:var(--up);box-shadow:0 0 18px rgba(125,180,255,.3)}
+.bar button#bSetup{background:linear-gradient(135deg,#2f7fb3,#2aa59b);border-color:transparent;color:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(47,127,179,.4)}
+.bar button#bRefresh{border-radius:12px}
+.bar button#bSetup:hover,.bar button#bRefresh:hover{transform:translateY(-2px)}
 .bar{flex-wrap:wrap}
 #catBar{flex:1 0 100%;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
 #catBar:empty{display:none}
@@ -479,11 +512,16 @@ function renderBrowser(el, allPaths, files) {
     nm.className = 'pn'; nm.textContent = p.split('/').pop();
     nm.onclick = () => openFile(p);
     mt.className = 'pm';
-    mt.textContent = (ix > 0 ? p.slice(ix + 1).toUpperCase() : 'FILE') + ' · ' + fmtSize(m.size) + ' · ' + dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    mt.innerHTML = '<span></span><span></span>';
+        mt.children[0].textContent = fmtSize(m.size);
+        mt.children[1].textContent = dt.toLocaleDateString() + ' · ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        var bd = document.createElement('span');
+        bd.className = 'bd';
+        bd.textContent = ix > 0 ? p.slice(ix + 1).toUpperCase() : 'FILE';
     del.className = 'del'; del.textContent = '✕'; del.title = 'Delete ' + p;
     del.onclick = ev => { ev.stopPropagation(); deleteFile(p); };
     info.append(nm, mt);
-    card.append(pt, dot, del, info);
+    card.append(pt, bd, dot, del, info);
     pv.appendChild(card);
   });
   br.append(pv);
