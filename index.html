@@ -458,6 +458,9 @@ async function cycle(why) {
       if (timer) { clearInterval(timer); timer = null; }
       root = null;
       $('bSetup').classList.remove('conn');
+            idbSet(HANDLE_KEY, null).catch(() => {});
+            treeSig = '';
+            $('tree').innerHTML = '<div class="te">Folder missing: click Add Pictures Folder</div>';
             $('bSetup').querySelector('span').textContent = 'Add Pictures Folder';
             setStatus('paused', 'Folder missing: click ' + NAME + ' icon');
       log('err', 'connected folder no longer exists. Auto-sync stopped, cloud untouched. Click the ' + NAME + ' icon to reconnect.');
@@ -893,7 +896,7 @@ function armReconnect() {
 }
 $('bSetup').onclick = async () => {
   if (root) { if (!confirm('Switch to a different folder? The current connection will be replaced.')) return; }
-  else if (await resumeFolder()) return;
+  else if ((await resumeFolder()) && root) return;
   await setup();
 };
 $('bRefresh').onclick = async () => {
