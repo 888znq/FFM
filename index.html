@@ -626,7 +626,33 @@ async function downloadZip() {
 }
 
 // ───────── Wiring ─────────
-$('bSetup').onclick = setup;
+async function resumeFolder() {
+  try {
+    const h = await idbGet(HANDLE_KEY);
+    if (!h) return false;
+    const p = await h.requestPermission({ mode: 'readwrite' });
+    log('info', 'folder permission: ' + p);
+    if (p !== 'granted') return false;
+    await useFolder(h, false);
+    return true;
+  } catch (e) { log('warn', 'could not reconnect saved folder: ' + e.message); return false; }
+}
+function armReconnect() {
+  const go = async ev => {
+    if (root) { document.removeEventListener('click', go, true); document.removeEventListener('keydown', go, true); return; }
+    if (ev.target.closest && ev.target.closest('.bar')) return;   // icon buttons handle themselves
+    document.removeEventListener('click', go, true);
+    document.removeEventListener('keydown', go, true);
+    if (!(await resumeFolder())) setStatus('paused', 'Click ' + NAME + ' icon to choose folder');
+  };
+  document.addEventListener('click', go, true);
+  document.addEventListener('keydown', go, true);
+}
+$('bSetup').onclick = async () => {
+  if (root) { if (!confirm('Switch to a different folder? The current connection will be replaced.')) return; }
+  else if (await resumeFolder()) return;
+  await setup();
+};
 $('bZip').onclick = downloadZip;
 $('bMaster').onclick = saveMaster;
 $('bRestore').onclick = restoreMaster;
@@ -665,7 +691,11 @@ window.addEventListener('unhandledrejection', e => log('err', 'unhandled: ' + (e
       const p = await h.queryPermission({ mode: 'readwrite' });
       log('info', 'saved folder "' + h.name + '", permission: ' + p);
       if (p === 'granted') await useFolder(h, false);
-      else setStatus('paused', 'Click ' + NAME + ' icon to reconnect');
+      else {
+        setStatus('paused', 'Click anywhere to reconnect "' + h.name + '"');
+        log('info', 'click anywhere on the page to reconnect the saved folder');
+        armReconnect();
+      }
     }
   } catch (e) { log('warn', 'could not restore saved folder: ' + e.message); }
 })();
